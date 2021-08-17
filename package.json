@@ -1,0 +1,30 @@
+{
+  "name": "expresscontainer",
+  "version": "1.0.0",
+  "description": "A sample Node.js Express app.",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node ./src/bin/www",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DoItForSpike/ExpressContainer.git"
+  },
+  "keywords": [
+    "express",
+    "container"
+  ],
+  "author": "Kevin Peters <kwpeters@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DoItForSpike/ExpressContainer/issues"
+  },
+  "homepage": "https://github.com/DoItForSpike/ExpressContainer#readme",
+  "dependencies": {
+    "express": "4.17.1",
+    "cookie-parser": "1.4.4",
+    "debug": "2.6.9",
+    "morgan": "1.9.1"
+  },
+}
