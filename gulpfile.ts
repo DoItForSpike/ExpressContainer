@@ -1,5 +1,6 @@
 import { series } from "gulp";
 import * as path from "path";
+import * as _ from "lodash";
 import del from "del";
 import { nodeBinForOs } from "./dev/depot/nodeUtil";
 import { runJasmine } from "./dev/depot/jasmineHelpers";
@@ -8,6 +9,7 @@ import { spawn } from "./dev/depot/spawn";
 import { toGulpError } from "./dev/depot/gulpHelpers";
 // Modules using "export =""
 import Jasmine = require("jasmine")
+import { File } from "./dev/depot/file";
 
 ////////////////////////////////////////////////////////////////////////////////
 // Constants
@@ -27,6 +29,7 @@ export async function clean(): Promise<void>
 
 async function runClean(): Promise<void>
 {
+    console.log(`Deleting generated files...`);
     await del([
         tmpDir.toString() + "/**",
         distDir.toString() + "/**"
@@ -44,6 +47,7 @@ export async function eslint(): Promise<void>
 
 async function runEslint(emitError: boolean): Promise<void>
 {
+    console.log(`Running ESLint...`);
     const eslintArgs = [
         ".",
         // "--ext", ".js",
@@ -74,7 +78,6 @@ export async function ut(): Promise<void>
 
 async function runUnitTests(): Promise<void>
 {
-    // TODO: Do I need these console.logs?
     console.log("Running unit tests...");
 
     const jasmine = new Jasmine({});
@@ -96,4 +99,34 @@ async function runUnitTests(): Promise<void>
     {
         throw toGulpError(err, "One or more unit test failures.");
     });
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Compile
+////////////////////////////////////////////////////////////////////////////////
+export async function compile(): Promise<void>
+{
+    const tsconfigFile = new File("tsconfig.json");
+    await runCompile(tsconfigFile);
+}
+
+async function runCompile(tsconfigFile: File): Promise<void>
+{
+    console.log(`Compiling TypeScript (${tsconfigFile.toString()})...`);
+
+    // A typical command line looks something like:
+    // _ ./node_modules/.bin/tsc --project ./tsconfig.json _
+    const cmd = nodeBinForOs(path.join(".", "node_modules", ".bin", "tsc")).toString();
+    const args = [
+        "--project", tsconfigFile.toString(),
+        "--pretty"
+    ];
+
+    try {
+        await spawn(cmd, args, { cwd: __dirname }).closePromise;
+    } catch (err) {
+        console.error(_.trim(err.stdout + err.stderr));
+        throw toGulpError(new Error("TypeScript compilation failed."));
+    }
 }
