@@ -1,15 +1,15 @@
-import { series } from "gulp";
 import * as path from "path";
 import * as _ from "lodash";
 import del from "del";
 import { nodeBinForOs } from "./dev/depot/nodeUtil";
 import { runJasmine } from "./dev/depot/jasmineHelpers";
 import { Directory } from "./dev/depot/directory";
-import { spawn } from "./dev/depot/spawn";
 import { toGulpError } from "./dev/depot/gulpHelpers";
 // Modules using "export =""
 import Jasmine = require("jasmine")
 import { File } from "./dev/depot/file";
+import { spawn } from "./dev/depot/spawn2";
+import { failed } from "./dev/depot/result";
 
 ////////////////////////////////////////////////////////////////////////////////
 // Constants
@@ -50,21 +50,21 @@ async function runEslint(emitError: boolean): Promise<void>
     console.log(`Running ESLint...`);
     const eslintArgs = [
         ".",
-        // "--ext", ".js",
+        "--ext", ".js",
         "--ext", ".ts",
     ];
 
     let cmd = path.join(".", "node_modules", ".bin", "eslint");
     cmd = nodeBinForOs(cmd).toString();
+    const spawnResult = await spawn(
+        cmd, eslintArgs, { cwd: __dirname }, undefined,
+        // Since this process's stdout and stderr are being used error output
+        // does not have to be captured and printed if there are errors.
+        process.stdout, process.stderr)
+    .closePromise;
 
-    try {
-        await spawn(cmd, eslintArgs, { cwd: __dirname },
-                    undefined, process.stdout, process.stderr)
-        .closePromise;
-    } catch (error) {
-        if (emitError) {
-            throw toGulpError(error, "ESLint errors found.");
-        }
+    if (failed(spawnResult) && emitError) {
+        throw toGulpError(spawnResult.error, "ESLint errors found.");
     }
 }
 
@@ -130,3 +130,8 @@ async function runCompile(tsconfigFile: File): Promise<void>
         throw toGulpError(new Error("TypeScript compilation failed."));
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Build
+////////////////////////////////////////////////////////////////////////////////
+
