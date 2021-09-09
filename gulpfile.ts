@@ -5,11 +5,14 @@ import { nodeBinForOs } from "./dev/depot/nodeUtil";
 import { runJasmine } from "./dev/depot/jasmineHelpers";
 import { Directory } from "./dev/depot/directory";
 import { toGulpError } from "./dev/depot/gulpHelpers";
-// Modules using "export =""
-import Jasmine = require("jasmine")
 import { File } from "./dev/depot/file";
 import { spawn } from "./dev/depot/spawn2";
 import { failed } from "./dev/depot/result";
+import { assertNever } from "./dev/depot/never";
+// Modules using "export =""
+import Jasmine = require("jasmine")
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Constants
@@ -123,15 +126,21 @@ async function runCompile(tsconfigFile: File): Promise<void>
         "--pretty"
     ];
 
-    try {
-        await spawn(cmd, args, { cwd: __dirname }).closePromise;
-    } catch (err) {
-        console.error(_.trim(err.stdout + err.stderr));
-        throw toGulpError(new Error("TypeScript compilation failed."));
-    }
+    const compileResult = await spawn(cmd, args, { cwd: __dirname }).closePromise;
+    if (failed(compileResult)) {
+        switch (compileResult.error.type) {
+            case "ISpawnSystemError":
+                console.error(_.trim(JSON.stringify(compileResult.error)));
+                throw toGulpError(new Error("Unable to invoke TypeScript compiler."));
+
+            case "ISpawnExitError":
+                console.error(_.trim(compileResult.error.stdout + compileResult.error.stderr));
+                throw toGulpError(new Error("TypeScript compilation failed."));
+
+            default:
+                assertNever(compileResult.error);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Build
 ////////////////////////////////////////////////////////////////////////////////
-
