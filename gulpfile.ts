@@ -139,6 +139,8 @@ async function runCompile(tsconfigFile: File): Promise<void>
 
             default:
                 assertNever(compileResult.error);
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -147,7 +149,6 @@ async function runCompile(tsconfigFile: File): Promise<void>
 
 
 // TODO:
-// - Update to TS 4.4
 // - Get rid of Gulp in favor of npm scripts
 //
 // - Make sure compile still prints out compiler errors ok.
