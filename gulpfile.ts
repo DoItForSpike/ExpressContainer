@@ -2,16 +2,12 @@ import * as path from "path";
 import * as _ from "lodash";
 import del from "del";
 import { nodeBinForOs } from "./dev/depot/nodeUtil";
-import { runJasmine } from "./dev/depot/jasmineHelpers";
 import { Directory } from "./dev/depot/directory";
 import { toGulpError } from "./dev/depot/gulpHelpers";
 import { File } from "./dev/depot/file";
 import { spawn } from "./dev/depot/spawn2";
 import { failed } from "./dev/depot/result";
 import { assertNever } from "./dev/depot/never";
-// Modules using "export =""
-import Jasmine = require("jasmine")
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -78,11 +74,11 @@ async function runEslint(emitError: boolean): Promise<void>
 
 export async function ut(): Promise<void>
 {
-    await runUnitTests();
+    await runUnitTests(true);
 }
 
 
-async function runUnitTests(allowOutput = false): Promise<void>
+async function runUnitTests(allowOutput: boolean): Promise<void>
 {
     console.log("Running unit tests...");
     const jasmineConfigFile = new File(".", "jasmine.json");
