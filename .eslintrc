@@ -100,7 +100,15 @@
                 "leadingUnderscore": "require"
             }
         ],
-        "@typescript-eslint/no-unused-vars": [2],
+        "no-unused-vars": "off",  // Must be turned off when the following @typescript-eslint/no-unused-vars is defined.
+        "@typescript-eslint/no-unused-vars": [
+            "error",
+            {
+                "vars": "all",
+                "args": "none", // It's ok to have unused args to b/c they provide signature documentation
+                "caughtErrors": "none"
+            }
+        ],
         "@typescript-eslint/member-ordering": [
             2,
             {
