@@ -164,13 +164,3 @@ async function runCompile(tsconfigFile: File): Promise<void>
 ////////////////////////////////////////////////////////////////////////////////
 // Build
 ////////////////////////////////////////////////////////////////////////////////
-
-
-// TODO:
-// - Get rid of Gulp in favor of npm scripts
-//
-// - Make sure compile still prints out compiler errors ok.
-// - Change eslint task to only capture output.
-// - Make sure ESLint warnings and errors are both printed after running.
-// - Is thee a way to capture output when running the Jasmine unit tests?
-// - Implement a maximally parallel build task that does all the operations in parallel and stops on the first error (promiseResult.all()).
