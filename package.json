@@ -4,7 +4,9 @@
   "description": "A sample Node.js Express app.",
   "main": "dist/bin/www.js",
   "scripts": {
-    "start": "node ./src/bin/www",
+    "start": "node ./dist/bin/www",
+    "start-bash": "DEBUG=* node ./dist/bin/www",
+    "win-start": "@powershell -Command $env:DEBUG='*';node ./dist/bin/www",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
