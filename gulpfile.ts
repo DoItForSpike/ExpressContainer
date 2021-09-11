@@ -71,38 +71,55 @@ async function runEslint(emitError: boolean): Promise<void>
     }
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
 // Unit Tests
 ////////////////////////////////////////////////////////////////////////////////
+
 export async function ut(): Promise<void>
 {
     await runUnitTests();
 }
 
-async function runUnitTests(): Promise<void>
+
+async function runUnitTests(allowOutput = false): Promise<void>
 {
     console.log("Running unit tests...");
+    const jasmineConfigFile = new File(".", "jasmine.json");
 
-    const jasmine = new Jasmine({});
-    jasmine.loadConfig(
-        {
-            "spec_dir":   "src",
-            "spec_files": [
-                "**/*.spec.ts"
-            ],
-            "helpers": [
-            ],
-            "stopSpecOnExpectationFailure": false,
-            "random":                       false
-        }
-    );
+    const cmd = nodeBinForOs(path.join(".", "node_modules", ".bin", "jasmine")).toString();
+    const args = [
+        "--color",
+        `--config=${jasmineConfigFile.toString()}`
+    ];
 
-    return runJasmine(jasmine)
-    .catch((err) =>
+    const unitTestResult = await spawn(
+        cmd,
+        args,
+        { cwd: __dirname },
+        undefined,
+        allowOutput ? process.stdout : undefined,
+        allowOutput ? process.stderr : undefined
+    )
+    .closePromise;
+    if (failed(unitTestResult))
     {
-        throw toGulpError(err, "One or more unit test failures.");
-    });
+        switch (unitTestResult.error.type)
+        {
+            case "ISpawnSystemError":
+                console.error(_.trim(JSON.stringify(unitTestResult.error)));
+                throw toGulpError(new Error("Unable to invoke Jasmine."));
+
+            case "ISpawnExitError":
+                console.error(_.trim(unitTestResult.error.stdout + unitTestResult.error.stderr));
+                throw toGulpError(new Error("Jasmine unit tests failed."));
+
+            default:
+                assertNever(unitTestResult.error);
+        }
+    }
 }
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
