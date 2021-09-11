@@ -78,6 +78,14 @@
                 "ignoreRegExpLiterals": true
             }
         ],
+        "quotes": [
+            "error",
+            "double",
+            {
+                "avoidEscape": true,
+                "allowTemplateLiterals": true
+            }
+        ],
         "semi": [
             2,
             "always"
