@@ -26,6 +26,7 @@ export async function clean(): Promise<void>
     await runClean();
 }
 
+
 async function runClean(): Promise<void>
 {
     console.log(`Deleting generated files...`);
@@ -39,10 +40,12 @@ async function runClean(): Promise<void>
 ////////////////////////////////////////////////////////////////////////////////
 // eslint
 ////////////////////////////////////////////////////////////////////////////////
+
 export async function eslint(): Promise<void>
 {
     return runEslint(true);
 }
+
 
 async function runEslint(emitError: boolean): Promise<void>
 {
@@ -117,15 +120,16 @@ async function runUnitTests(allowOutput: boolean): Promise<void>
 }
 
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // Compile
 ////////////////////////////////////////////////////////////////////////////////
+
 export async function compile(): Promise<void>
 {
     const tsconfigFile = new File("tsconfig.json");
     await runCompile(tsconfigFile);
 }
+
 
 async function runCompile(tsconfigFile: File): Promise<void>
 {
@@ -155,6 +159,7 @@ async function runCompile(tsconfigFile: File): Promise<void>
         }
     }
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Build
