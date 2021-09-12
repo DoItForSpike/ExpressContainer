@@ -5,8 +5,8 @@ import { nodeBinForOs } from "./dev/depot/nodeUtil";
 import { Directory } from "./dev/depot/directory";
 import { toGulpError } from "./dev/depot/gulpHelpers";
 import { File } from "./dev/depot/file";
-import { spawn } from "./dev/depot/spawn2";
-import { failed, failedResult, Result, succeededResult } from "./dev/depot/result";
+import { spawn, SpawnError, SpawnErrorToString } from "./dev/depot/spawn2";
+import { failed, failedResult, Result, succeeded, succeededResult } from "./dev/depot/result";
 import { assertNever } from "./dev/depot/never";
 import * as promiseResult from "./dev/depot/promiseResult";
 
@@ -51,13 +51,21 @@ async function runClean(): Promise<Result<undefined, string>>
 
 export async function eslint(): Promise<void>
 {
-    return runEslint(true);
+    const result = await runEslint();
+    if (succeeded(result)) {
+        // We still need to print the eslint output, because it may contain
+        // warnings (only errors cause failure).
+        console.log(result.value);
+        return;
+    }
+    else {
+        console.log(SpawnErrorToString(result.error));
+        throw toGulpError(undefined, "ESLint errors found.");
+    }
 }
 
 
-async function runEslint(
-    emitError: boolean
-): Promise<void>
+async function runEslint(): Promise<Result<string, SpawnError>>
 {
     console.log(`Running ESLint...`);
     const eslintArgs = [
@@ -68,16 +76,9 @@ async function runEslint(
 
     let cmd = path.join(".", "node_modules", ".bin", "eslint");
     cmd = nodeBinForOs(cmd).toString();
-    const spawnResult = await spawn(
-        cmd, eslintArgs, { cwd: __dirname }, undefined,
-        // Since this process's stdout and stderr are being used error output
-        // does not have to be captured and printed if there are errors.
-        process.stdout, process.stderr)
+    return await spawn(
+        cmd, eslintArgs, { cwd: __dirname })
     .closePromise;
-
-    if (failed(spawnResult) && emitError) {
-        throw toGulpError(spawnResult.error, "ESLint errors found.");
-    }
 }
 
 
