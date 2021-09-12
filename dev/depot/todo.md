@@ -1,6 +1,6 @@
 # TODO
 
-- In .eslintrc, replace 1 with "warning" and 2 with "error"
+- In .eslintrc, replace 1 with "warning" and 2 with "error" - "off", "warn", "error"
 - Convert gulpfile helper functions to return Promise<Result<>>.
 - Implement a maximally parallel build task that does all the operations in parallel and stops on the first error (promiseResult.all()).
 - Make sure eslint warnings are still output by build procedure.

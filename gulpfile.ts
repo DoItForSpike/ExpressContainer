@@ -47,7 +47,9 @@ export async function eslint(): Promise<void>
 }
 
 
-async function runEslint(emitError: boolean): Promise<void>
+async function runEslint(
+    emitError: boolean
+): Promise<void>
 {
     console.log(`Running ESLint...`);
     const eslintArgs = [
@@ -81,7 +83,9 @@ export async function ut(): Promise<void>
 }
 
 
-async function runUnitTests(allowOutput: boolean): Promise<void>
+async function runUnitTests(
+    allowOutput: boolean
+): Promise<void>
 {
     console.log("Running unit tests...");
     const jasmineConfigFile = new File(".", "jasmine.json");

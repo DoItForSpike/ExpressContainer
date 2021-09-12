@@ -4,7 +4,7 @@ import * as _ from "lodash";
 import {ListenerTracker} from "./listenerTracker";
 
 
-export type CallBackType<ResultType> = (err: any, result?: ResultType) => void;
+export type CallBackType<ResultType> = (err: unknown, result?: ResultType) => void;
 
 
 /**
@@ -15,13 +15,13 @@ export type CallBackType<ResultType> = (err: any, result?: ResultType) => void;
  * @return A function that takes the arguments and returns a Promise for the result.
  */
 export function promisifyN<ResultType>(
-    func: (...args: Array<any>) => void
-): (...args: Array<any>) => Promise<ResultType> {
+    func: (...args: Array<unknown>) => void
+): (...args: Array<unknown>) => Promise<ResultType> {
 
-    const promisifiedFunc = function (...args: Array<any>): Promise<ResultType> {
+    const promisifiedFunc = function (...args: Array<unknown>): Promise<ResultType> {
 
-        return new Promise<ResultType>((resolve: (result: ResultType) => void, reject: (err: any) => void) => {
-            const allArgs = args.concat((err: any, result: ResultType) =>
+        return new Promise<ResultType>((resolve: (result: ResultType) => void, reject: (err: unknown) => void) => {
+            const allArgs = args.concat((err: unknown, result: ResultType) =>
             {
                 if (err)
                 {
@@ -52,8 +52,8 @@ export function promisify1<ResultType, Arg1Type>(
 ): (arg1: Arg1Type) => Promise<ResultType> {
 
     const promisifiedFunc = function (arg1: Arg1Type): Promise<ResultType> {
-        return new Promise<ResultType>((resolve: (result: ResultType) => void, reject: (err: any) => void) => {
-            func(arg1, (err: any, result?: ResultType) => {
+        return new Promise<ResultType>((resolve: (result: ResultType) => void, reject: (err: unknown) => void) => {
+            func(arg1, (err: unknown, result?: ResultType) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -81,8 +81,8 @@ export function promisify2<ResultType, Arg1Type, Arg2Type>(
 ): (arg1: Arg1Type, arg2: Arg2Type) => Promise<ResultType> {
 
     const promisifiedFunc = function (arg1: Arg1Type, arg2: Arg2Type): Promise<ResultType> {
-        return new Promise<ResultType>((resolve: (result: ResultType) => void, reject: (err: any) => void) => {
-            func(arg1, arg2, (err: any, result?: ResultType) => {
+        return new Promise<ResultType>((resolve: (result: ResultType) => void, reject: (err: unknown) => void) => {
+            func(arg1, arg2, (err: unknown, result?: ResultType) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -109,8 +109,8 @@ export function promisify3<ResultType, Arg1Type, Arg2Type, Arg3Type>(
 ): (arg1: Arg1Type, arg2: Arg2Type, arg3: Arg3Type) => Promise<ResultType> {
 
     const promisifiedFunc = function (arg1: Arg1Type, arg2: Arg2Type, arg3: Arg3Type): Promise<ResultType> {
-        return new Promise<ResultType>((resolve: (result: ResultType) => void, reject: (err: any) => void) => {
-            func(arg1, arg2, arg3, (err: any, result?: ResultType) => {
+        return new Promise<ResultType>((resolve: (result: ResultType) => void, reject: (err: unknown) => void) => {
+            func(arg1, arg2, arg3, (err: unknown, result?: ResultType) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -142,16 +142,17 @@ export type Task<ResolveType> = () => Promise<ResolveType>;
  * of the last function.
  */
 export function sequence(
-    tasks: Array<(previousValue: any) => any>,
-    initialValue: any  // eslint-disable-line @typescript-eslint/explicit-module-boundary-types
-): Promise<any> {
+    tasks: Array<(previousValue: unknown) => unknown>,
+    initialValue: unknown
+): Promise<unknown> {
     "use strict";
 
     return tasks.reduce(
         (accumulator, curTask) => {
             return accumulator.then(curTask);
         },
-        Promise.resolve(initialValue));
+        Promise.resolve(initialValue)
+    );
 }
 
 
@@ -196,7 +197,7 @@ export function getTimerPromise<ResolveType>(
  * `falseResolveValue`.
  */
 export function conditionalTask<ResolveType>(
-    condition: any,  // eslint-disable-line @typescript-eslint/explicit-module-boundary-types
+    condition: unknown,
     task: Task<ResolveType>,
     falseResolveValue: ResolveType
 ): Promise<ResolveType> {
@@ -223,7 +224,7 @@ export function eventToPromise<ResolveType>(
 ): Promise<ResolveType>
 {
     return new Promise<ResolveType>(
-        (resolve: (result: ResolveType) => void, reject: (err: any) => void) => {
+        (resolve: (result: ResolveType) => void, reject: (err: unknown) => void) => {
             const tracker = new ListenerTracker(emitter);
 
             tracker.once(resolveEventName, (result: ResolveType) => {
@@ -233,7 +234,7 @@ export function eventToPromise<ResolveType>(
 
             if (rejectEventName)
             {
-                tracker.once(rejectEventName, (err: any) => {
+                tracker.once(rejectEventName, (err: unknown) => {
                     tracker.removeAll();
                     reject(err);
                 });
@@ -306,7 +307,7 @@ export function retry<ResolveType>(
  */
 export function retryWhile<ResolveType>(
     theFunc: () => Promise<ResolveType>,
-    whilePredicate: (err: any) => boolean,
+    whilePredicate: (err: unknown) => boolean,
     maxNumAttempts: number
 ): Promise<ResolveType> {
     "use strict";
@@ -331,13 +332,13 @@ const BACKOFF_MULTIPLIER = 20;
  */
 function retryWhileImpl<ResolveType>(
     theFunc:         () => Promise<ResolveType>,
-    whilePredicate:  (err: any) => boolean,
+    whilePredicate:  (err: unknown) => boolean,
     maxNumAttempts:  number,
     attemptsSoFar:   number
 ): Promise<ResolveType> {
     "use strict";
     return new Promise(
-        (resolve: (value: ResolveType|Promise<ResolveType>) => void, reject: (err: any) => void) => {
+        (resolve: (value: ResolveType|Promise<ResolveType>) => void, reject: (err: unknown) => void) => {
 
             ++attemptsSoFar;
             theFunc()
@@ -347,7 +348,7 @@ function retryWhileImpl<ResolveType>(
                     // immediately.
                     resolve(value);
                 },
-                (err: any): void => {
+                (err: unknown): void => {
                     // The promise was rejected.
                     if (attemptsSoFar >= maxNumAttempts) {
                         // logger.error("Retry operation failed after " + maxNumAttempts + " attempts.");
@@ -427,17 +428,17 @@ export function promiseWhile(predicate: () => boolean, body: Task<void>): Promis
  * @returns A new array of Promises that will settle sequentially,
  * starting at index 0.
  */
-export function sequentialSettle(inputPromises: Array<Promise<any>>): Array<Promise<any>> {
+export function sequentialSettle<TResolve>(inputPromises: Array<Promise<TResolve>>): Array<Promise<TResolve>> {
     "use strict";
 
-    const outputPromises: Array<Promise<any>> = [];
+    const outputPromises: Array<Promise<TResolve>> = [];
 
     _.forEach(inputPromises, (curInputPromise) => {
-        const previousPromise: Promise<any> = outputPromises.length > 0 ?
-                                              outputPromises[outputPromises.length - 1]! :
-                                              Promise.resolve();
+        const previousPromise: Promise<unknown> = outputPromises.length > 0 ?
+                                                  outputPromises[outputPromises.length - 1]! :
+                                                  Promise.resolve();
 
-        const promise: Promise<any> = delaySettle(curInputPromise, previousPromise);
+        const promise: Promise<TResolve> = delaySettle(curInputPromise, previousPromise);
         outputPromises.push(promise);
     });
 
@@ -456,7 +457,7 @@ export function sequentialSettle(inputPromises: Array<Promise<any>>): Array<Prom
  */
 export function delaySettle<ResolveType>(
     thePromise: Promise<ResolveType>,
-    waitFor:    Promise<any>
+    waitFor:    Promise<unknown>
 ): Promise<ResolveType> {
     return thePromise
     .then((result: ResolveType) => {
@@ -466,7 +467,7 @@ export function delaySettle<ResolveType>(
         .then(() => result )
         .catch(() => result );
     })
-    .catch((err: any) => {
+    .catch((err: unknown) => {
         // Whether waitFor resolved or rejected, we should reject with the
         // original error.
         return waitFor
@@ -531,7 +532,7 @@ export async function zipWithAsyncValues<T, V>(
  */
 export async function filterAsync<T>(
     collection:     Array<T>,
-    asyncPredicate: (curVal: T) => Promise<any>
+    asyncPredicate: (curVal: T) => Promise<unknown>
 ): Promise<Array<T>>
 {
     const pairs = await zipWithAsyncValues(collection, asyncPredicate);
@@ -555,7 +556,7 @@ export async function filterAsync<T>(
  */
 export async function partitionAsync<T>(
     collection:     Array<T>,
-    asyncPredicate: (curVal: T) => Promise<any>
+    asyncPredicate: (curVal: T) => Promise<unknown>
 ): Promise<[Array<T>, Array<T>]>
 {
     const pairs = await zipWithAsyncValues(collection, asyncPredicate);
@@ -579,7 +580,7 @@ export async function partitionAsync<T>(
  */
 export async function removeAsync<T>(
     collection:     Array<T>,
-    asyncPredicate: (curVal: T) => Promise<any>
+    asyncPredicate: (curVal: T) => Promise<unknown>
 ): Promise<Array<T>>
 {
     const pairs = await zipWithAsyncValues(collection, asyncPredicate);
