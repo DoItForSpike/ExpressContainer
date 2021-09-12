@@ -6,9 +6,9 @@ import { Directory } from "./dev/depot/directory";
 import { toGulpError } from "./dev/depot/gulpHelpers";
 import { File } from "./dev/depot/file";
 import { spawn } from "./dev/depot/spawn2";
-import { failed } from "./dev/depot/result";
+import { failed, failedResult, Result, succeededResult } from "./dev/depot/result";
 import { assertNever } from "./dev/depot/never";
-
+import * as promiseResult from "./dev/depot/promiseResult";
 
 ////////////////////////////////////////////////////////////////////////////////
 // Constants
@@ -21,19 +21,27 @@ const tmpDir  = new Directory(__dirname, "tmp");
 ////////////////////////////////////////////////////////////////////////////////
 // clean
 ////////////////////////////////////////////////////////////////////////////////
+
 export async function clean(): Promise<void>
 {
-    await runClean();
+    return promiseResult.toPromise(runClean());
 }
 
 
-async function runClean(): Promise<void>
+async function runClean(): Promise<Result<undefined, string>>
 {
     console.log(`Deleting generated files...`);
-    await del([
-        tmpDir.toString() + "/**",
-        distDir.toString() + "/**"
-    ]);
+
+    try {
+        await del([
+            tmpDir.toString() + "/**",
+            distDir.toString() + "/**"
+        ]);
+
+        return succeededResult(undefined);
+    } catch (error) {
+        return failedResult(`Failed to delete files. ${JSON.stringify(error, undefined, 4)}`);
+    }
 }
 
 
