@@ -88,14 +88,23 @@ async function runEslint(): Promise<Result<string, SpawnError>>
 
 export async function ut(): Promise<void>
 {
-    await runUnitTests(true);
+    const result = await runUnitTests(true);
+    if (succeeded(result)) {
+        console.log(result.value);
+    }
+    else {
+        console.log(SpawnErrorToString(result.error));
+        throw toGulpError(undefined, "Unit tests failed.");
+    }
 }
 
 
 async function runUnitTests(
     allowOutput: boolean
-): Promise<void>
+): Promise<Result<string, SpawnError>>
 {
+    // TODO: Need to change these to go into the output.
+    // Doing this will produce garbled output when running concurrently.
     console.log("Running unit tests...");
     const jasmineConfigFile = new File(".", "jasmine.json");
 
@@ -105,7 +114,7 @@ async function runUnitTests(
         `--config=${jasmineConfigFile.toString()}`
     ];
 
-    const unitTestResult = await spawn(
+    return await spawn(
         cmd,
         args,
         { cwd: __dirname },
@@ -114,22 +123,6 @@ async function runUnitTests(
         allowOutput ? process.stderr : undefined
     )
     .closePromise;
-    if (failed(unitTestResult))
-    {
-        switch (unitTestResult.error.type)
-        {
-            case "ISpawnSystemError":
-                console.error(_.trim(JSON.stringify(unitTestResult.error)));
-                throw toGulpError(new Error("Unable to invoke Jasmine."));
-
-            case "ISpawnExitError":
-                console.error(_.trim(unitTestResult.error.stdout + unitTestResult.error.stderr));
-                throw toGulpError(new Error("Jasmine unit tests failed."));
-
-            default:
-                assertNever(unitTestResult.error);
-        }
-    }
 }
 
 
@@ -140,11 +133,18 @@ async function runUnitTests(
 export async function compile(): Promise<void>
 {
     const tsconfigFile = new File("tsconfig.json");
-    await runCompile(tsconfigFile);
+    const result = await runCompile(tsconfigFile);
+    if (succeeded(result)) {
+        console.log(result.value);
+    }
+    else {
+        console.log(SpawnErrorToString(result.error));
+        throw toGulpError(undefined, "TypeScript compilation failed.");
+    }
 }
 
 
-async function runCompile(tsconfigFile: File): Promise<void>
+async function runCompile(tsconfigFile: File): Promise<Result<string, SpawnError>>
 {
     console.log(`Compiling TypeScript (${tsconfigFile.toString()})...`);
 
@@ -156,21 +156,8 @@ async function runCompile(tsconfigFile: File): Promise<void>
         "--pretty"
     ];
 
-    const compileResult = await spawn(cmd, args, { cwd: __dirname }).closePromise;
-    if (failed(compileResult)) {
-        switch (compileResult.error.type) {
-            case "ISpawnSystemError":
-                console.error(_.trim(JSON.stringify(compileResult.error)));
-                throw toGulpError(new Error("Unable to invoke TypeScript compiler."));
-
-            case "ISpawnExitError":
-                console.error(_.trim(compileResult.error.stdout + compileResult.error.stderr));
-                throw toGulpError(new Error("TypeScript compilation failed."));
-
-            default:
-                assertNever(compileResult.error);
-        }
-    }
+    return spawn(cmd, args, { cwd: __dirname })
+    .closePromise;
 }
 
 
