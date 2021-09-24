@@ -1,6 +1,7 @@
 import * as path from "path";
 import * as _ from "lodash";
 import del from "del";
+import chalk from "chalk";
 import { nodeBinForOs } from "./dev/depot/nodeUtil";
 import { Directory } from "./dev/depot/directory";
 import { toGulpError } from "./dev/depot/gulpHelpers";
@@ -16,6 +17,10 @@ import * as promiseResult from "./dev/depot/promiseResult";
 const distDir = new Directory(__dirname, "dist");
 const tmpDir  = new Directory(__dirname, "tmp");
 
+const sep = "--------------------------------------------------------------------------------";
+
+const successText = chalk.green.bold;
+const failText    = chalk.red.bold;
 
 ////////////////////////////////////////////////////////////////////////////////
 // clean
@@ -181,10 +186,9 @@ export async function build(): Promise<void>
 
     if (failed(results)) {
         console.error(SpawnErrorToString(results.error));
-        throw toGulpError("Build failed.");
+        throw toGulpError("❌ " + failText("Build failed."));
     }
     else {
-        const sep = "--------------------------------------------------------------------------------";
 
         const output = [
             {name: "ESLint output",    output: results.value[0]},
@@ -203,6 +207,6 @@ export async function build(): Promise<void>
 
         console.log(sep);
         console.log("");
-        console.log("Build succeeded.");
+        console.log("✅ " + successText("Build succeeded."));
     }
 }
