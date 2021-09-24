@@ -7,7 +7,6 @@ import { toGulpError } from "./dev/depot/gulpHelpers";
 import { File } from "./dev/depot/file";
 import { spawn, SpawnError, SpawnErrorToString } from "./dev/depot/spawn2";
 import { failed, failedResult, Result, succeeded, succeededResult } from "./dev/depot/result";
-import { assertNever } from "./dev/depot/never";
 import * as promiseResult from "./dev/depot/promiseResult";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +59,7 @@ export async function eslint(): Promise<void>
     }
     else {
         console.log(SpawnErrorToString(result.error));
-        throw toGulpError(undefined, "ESLint errors found.");
+        throw toGulpError("ESLint errors found.");
     }
 }
 
@@ -94,7 +93,7 @@ export async function ut(): Promise<void>
     }
     else {
         console.log(SpawnErrorToString(result.error));
-        throw toGulpError(undefined, "Unit tests failed.");
+        throw toGulpError("Unit tests failed.");
     }
 }
 
@@ -139,7 +138,7 @@ export async function compile(): Promise<void>
     }
     else {
         console.log(SpawnErrorToString(result.error));
-        throw toGulpError(undefined, "TypeScript compilation failed.");
+        throw toGulpError("TypeScript compilation failed.");
     }
 }
 
@@ -164,3 +163,46 @@ async function runCompile(tsconfigFile: File): Promise<Result<string, SpawnError
 ////////////////////////////////////////////////////////////////////////////////
 // Build
 ////////////////////////////////////////////////////////////////////////////////
+
+export async function build(): Promise<void>
+{
+    const cleanResult = await runClean();
+    if (failed(cleanResult)) {
+        throw toGulpError(cleanResult.error);
+    }
+
+    const tsConfigFile = new File("tsconfig.json");
+
+    const results = await promiseResult.all(
+        runEslint(),
+        runUnitTests(false),
+        runCompile(tsConfigFile)
+    );
+
+    if (failed(results)) {
+        console.error(SpawnErrorToString(results.error));
+        throw toGulpError("Build failed.");
+    }
+    else {
+        const sep = "--------------------------------------------------------------------------------";
+
+        const output = [
+            {name: "ESLint output",    output: results.value[0]},
+            {name: "Unit test output", output: results.value[1]},
+            {name: "Compiler output",  output: results.value[2]}
+        ];
+
+        _.forEach(output, (curOutput) => {
+            if (curOutput.output) {
+                console.log(sep);
+                console.log(curOutput.name);
+                console.log(sep);
+                console.log(curOutput.output);
+            }
+        });
+
+        console.log(sep);
+        console.log("");
+        console.log("Build succeeded.");
+    }
+}
