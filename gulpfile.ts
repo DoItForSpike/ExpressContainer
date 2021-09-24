@@ -34,8 +34,6 @@ export async function clean(): Promise<void>
 
 async function runClean(): Promise<Result<undefined, string>>
 {
-    console.log(`Deleting generated files...`);
-
     try {
         await del([
             tmpDir.toString() + "/**",
@@ -71,7 +69,6 @@ export async function eslint(): Promise<void>
 
 async function runEslint(): Promise<Result<string, SpawnError>>
 {
-    console.log(`Running ESLint...`);
     const eslintArgs = [
         ".",
         "--ext", ".js",
@@ -80,8 +77,8 @@ async function runEslint(): Promise<Result<string, SpawnError>>
 
     let cmd = path.join(".", "node_modules", ".bin", "eslint");
     cmd = nodeBinForOs(cmd).toString();
-    return await spawn(
-        cmd, eslintArgs, { cwd: __dirname })
+
+    return spawn(cmd, eslintArgs, { cwd: __dirname })
     .closePromise;
 }
 
@@ -97,7 +94,8 @@ export async function ut(): Promise<void>
         console.log(result.value);
     }
     else {
-        console.log(SpawnErrorToString(result.error));
+        // Since we allowed output while running the unit test task, we don't
+        // have to print it out again.
         throw toGulpError("Unit tests failed.");
     }
 }
@@ -107,9 +105,6 @@ async function runUnitTests(
     allowOutput: boolean
 ): Promise<Result<string, SpawnError>>
 {
-    // TODO: Need to change these to go into the output.
-    // Doing this will produce garbled output when running concurrently.
-    console.log("Running unit tests...");
     const jasmineConfigFile = new File(".", "jasmine.json");
 
     const cmd = nodeBinForOs(path.join(".", "node_modules", ".bin", "jasmine")).toString();
@@ -118,7 +113,7 @@ async function runUnitTests(
         `--config=${jasmineConfigFile.toString()}`
     ];
 
-    return await spawn(
+    return spawn(
         cmd,
         args,
         { cwd: __dirname },
@@ -150,8 +145,6 @@ export async function compile(): Promise<void>
 
 async function runCompile(tsconfigFile: File): Promise<Result<string, SpawnError>>
 {
-    console.log(`Compiling TypeScript (${tsconfigFile.toString()})...`);
-
     // A typical command line looks something like:
     // _ ./node_modules/.bin/tsc --project ./tsconfig.json _
     const cmd = nodeBinForOs(path.join(".", "node_modules", ".bin", "tsc")).toString();
@@ -177,36 +170,43 @@ export async function build(): Promise<void>
     }
 
     const tsConfigFile = new File("tsconfig.json");
+    const tasks = [
+        {
+            name:          "ESLint",
+            promiseResult: runEslint()
+        },
+        {
+            name:          "Unit tests",
+            promiseResult: runUnitTests(false)
+        },
+        {
+            name:          "TypeScript compilation",
+            promiseResult: runCompile(tsConfigFile)
+        }
+    ];
 
-    const results = await promiseResult.all(
-        runEslint(),
-        runUnitTests(false),
-        runCompile(tsConfigFile)
-    );
+    const results = await promiseResult.allArray(_.map(tasks, (curTask) => curTask.promiseResult));
 
     if (failed(results)) {
-        console.error(SpawnErrorToString(results.error));
+        console.error(failText(sep));
+        console.error(failText(`❌ Task failed: ${tasks[results.error.index]!.name}`));
+        console.error(failText(sep));
+        console.error(SpawnErrorToString(results.error.item));
         throw toGulpError("❌ " + failText("Build failed."));
     }
     else {
 
-        const output = [
-            {name: "ESLint output",    output: results.value[0]},
-            {name: "Unit test output", output: results.value[1]},
-            {name: "Compiler output",  output: results.value[2]}
-        ];
-
-        _.forEach(output, (curOutput) => {
-            if (curOutput.output) {
+        _.forEach(results.value, (curResult, index) => {
+            if (curResult) {
                 console.log(sep);
-                console.log(curOutput.name);
+                console.log(`Output from ${tasks[index]!.name}`);
                 console.log(sep);
-                console.log(curOutput.output);
+                console.log(curResult);
             }
         });
 
-        console.log(sep);
-        console.log("");
+        console.log(successText(sep));
         console.log("✅ " + successText("Build succeeded."));
+        console.log(successText(sep));
     }
 }
