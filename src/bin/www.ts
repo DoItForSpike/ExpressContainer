@@ -85,12 +85,20 @@ function onError(error: NodeJS.ErrnoException)
 /**
  * Event listener for HTTP server "listening" event.
  */
-
 function onListening()
 {
     const addr = server.address();
-    const bind = typeof addr === "string" ?
-        "pipe " + addr:
-        "port " + addr?.port;
+
+    let bind: string;
+    if (typeof addr === "string") {
+        bind = "pipe " + addr;
+    }
+    else if (addr && addr.port) {
+        bind = "port " + addr.port;
+    }
+    else {
+        throw new Error("Unsupported address type.");
+    }
+
     debug(`Listening on ${bind}`);
 }
