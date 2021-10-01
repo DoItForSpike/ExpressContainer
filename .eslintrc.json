@@ -2,9 +2,7 @@
     "root": true,
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
-        "project": [
-            "tsconfig.json"
-        ]
+        "project": ["tsconfig.json"]
     },
     "plugins": [
         "@typescript-eslint"
@@ -115,23 +113,26 @@
             "always"
         ],
         "accessor-pairs": "error",
+        "array-bracket-newline": [
+            "error",
+            "consistent"
+        ],
+        "array-bracket-spacing": ["error", "never"],
         "array-callback-return": "error",
         "arrow-parens": [
             "error",
             "always"
         ],
         "block-scoped-var": "error",
+        "block-spacing": "error",
+        "camelcase": "error",
+        "comma-dangle": ["error", "only-multiline"],
+        "comma-spacing": "error",
         "curly": "error",
         "default-case-last": "error",
-        "dot-location": [
-            "error",
-            "property"
-        ],
-        "dot-notation": "off", // Needs to be off when @typescript-eslint/dot-notation is on
-        "grouped-accessor-pairs": [
-            "error",
-            "getBeforeSet"
-        ],
+        "dot-location": ["error", "property"],
+        "dot-notation": "off",      // Needs to be off when @typescript-eslint/dot-notation is on
+        "grouped-accessor-pairs": ["error", "getBeforeSet"],
         "guard-for-in": "error",
         "indent": [
             "error",
@@ -159,10 +160,7 @@
             }
         ],
         "default-param-last": "error",
-        "eqeqeq": [
-            "error",
-            "always"
-        ],
+        "eqeqeq": ["error", "always"],
         "key-spacing": [
             "error",
             {
@@ -190,27 +188,48 @@
         ],
         "no-constructor-return": "error",
         "no-eq-null": "error",
-        "no-eval": [
-            "error",
-            {
+        "no-eval": ["error", {
                 "allowIndirect": true
             }
         ],
         "no-extend-native": "error",
-        "no-promise-executor-return": "error",
-        "no-template-curly-in-string": "error",
-        "no-unreachable-loop": "error",
-        "no-unsafe-optional-chaining": [
+        "no-extra-bind": "error",
+        "no-implicit-coercion": [
             "error",
             {
-                "disallowArithmeticOperators": true
+                "boolean": false,
+                "number": true,
+                "string": true
             }
         ],
-        "no-unused-vars": "off", // Must be turned off when the following @typescript-eslint/no-unused-vars is defined.
+        "no-implied-eval": "error",
+        "no-lone-blocks": "error",
+        "no-loop-func": "error",
+        "no-new-func": "error",
+        "no-new-wrappers": "error",
+        "no-promise-executor-return": "error",
+        "no-return-assign": "error",
+        "no-return-await": "error",
+        "no-self-compare": "error",
+        "no-sequences": "error",
+        "no-template-curly-in-string": "error",
+        "no-unmodified-loop-condition": "error",
+        "no-unreachable-loop": "error",
+        "no-unsafe-optional-chaining": ["error", {
+                "disallowArithmeticOperators": true
+            }],
+        "no-unused-expressions": "error",
+        "no-unused-vars": "off",     // Must be turned off when the following @typescript-eslint/no-unused-vars is defined.
         "no-useless-backreference": "error",
+        "no-useless-call": "error",
+        "no-void": "error",
+        "prefer-named-capture-group": "error",
         "quotes": "off", // Needs to be off when @typescript-eslint/quotes is on
+        "radix": ["error", "always"],
         "require-atomic-updates": "error",
-        "semi": "off" // Needs to be off when @typescript-eslint/semi is on
+        "require-await": "error",
+        "semi": "off",               // Needs to be off when @typescript-eslint/semi is on
+        "wrap-iife": ["error", "any"]
     },
     "overrides": [
         {
