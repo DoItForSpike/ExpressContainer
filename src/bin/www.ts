@@ -93,7 +93,7 @@ function onListening()
     if (typeof addr === "string") {
         bind = "pipe " + addr;
     }
-    else if (addr && addr.port) {
+    else if (addr?.port) {
         bind = "port " + addr.port;
     }
     else {
