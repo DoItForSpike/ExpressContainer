@@ -140,6 +140,15 @@
                 ]
             },
             {
+                "selector": "typeParameter",
+                "format": [
+                    "PascalCase"
+                ],
+                "prefix": [
+                    "T"
+                ]
+            },
+            {
                 "selector": "classProperty",
                 "format": [
                     "camelCase"
@@ -148,6 +157,13 @@
                     "private"
                 ],
                 "leadingUnderscore": "require"
+            },
+            {
+                "selector": "enumMember",
+                "format": [
+                    "camelCase",
+                    "UPPER_CASE"
+                ]
             }
         ],
         "@typescript-eslint/no-explicit-any": "warn",
@@ -388,11 +404,7 @@
         "no-template-curly-in-string": "error",
         "no-trailing-spaces": "error",
         "no-underscore-dangle": [
-            "error",
-            {
-                "allowAfterThis": true,
-                "allowAfterSuper": true
-            }
+            "off"
         ],
         "no-unmodified-loop-condition": "error",
         "no-unneeded-ternary": "error",
